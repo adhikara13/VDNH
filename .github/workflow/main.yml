@@ -1,0 +1,39 @@
+name: Fetch and Backup Data
+
+on:
+  schedule:
+    - cron: "0 0 * * 0" # Every Sunday at midnight UTC
+  push:
+    branches:
+      - main
+
+jobs:
+  fetch-and-backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '14'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Fetch and backup data
+        run: |
+          fetch('https://vdnh.ru/local/templates/v3_new_header/js/places-s1.js')
+            .then(response => response.text())
+            .then(data => {
+              const jsonData = data.replace(/^var places = |;$/g, '');
+              const backupData = JSON.stringify(jsonData, null, 2);
+
+              require('fs').writeFileSync('backup.json', backupData);
+            })
+            .catch(error => {
+              console.error('Error fetching data:', error);
+              process.exit(1);
+            })

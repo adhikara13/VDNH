@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Places in VDNH</title>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Teko:wght@300&display=swap">
+    <style>
+        #tableHeader {
+            font-family: 'Teko', sans-serif;
+            font-size: 5rem;
+            font-weight: 300;
+            text-align: center;
+            padding-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <div class="container mx-auto my-8">
+        <h1 id="tableHeader">Places in VDNH</h1>
+        <div class="flex justify-center items-center mb-4">
+            <input type="text" class="p-2 border border-gray-300 rounded-md w-96 bg-gray-800 text-white placeholder-gray-500 focus:outline-none global_filter" id="global_filter" placeholder="Search...">
+        </div>
+        
+        <table id="placesTable" class="display mx-auto" style="width:80%">
+            <thead>
+                <tr>
+                    <th>Название места</th>
+                    <th>Place name</th>
+                    <th>地名</th>
+                    <th>URL</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <th>Название места</th>
+                    <th>Place name</th>
+                    <th>地名</th>
+                    <th>URL</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('https://vdnh.ru/local/templates/v3_new_header/js/places-s1.js')
+                .then(response => response.text())
+                .then(data => {
+                    const jsonData = data.replace(/^var places = |;$/g, '');
+                    const places = JSON.parse(jsonData);
+                    const placesArray = Object.values(places);
+    
+                    // Initialize DataTable
+                    let table = $('#placesTable').DataTable({
+                        data: placesArray,
+                        columns: [
+                            { data: 'properties.title' },
+                            { data: 'properties.title_en' },
+                            { data: 'properties.title_cn' },
+                            {
+                                data: 'properties._url',
+                                render: function (data) {
+                                    return `<a href="https://vdnh.ru${data}" target="_blank">Click here!</a>`;
+                                }
+                            }
+                        ]
+                    });
+    
+                    // Initialize the global filter
+                    document.querySelectorAll('input.global_filter').forEach((el) => {
+                        el.addEventListener(el.type === 'text' ? 'keyup' : 'change', () =>
+                            filterGlobal(table)
+                        );
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    // Fetch failed, try loading data from backup.json
+                    fetch('backup.json')
+                        .then(response => response.json())
+                        .then(data => {
+                            // Initialize DataTable with backup data
+                            let table = $('#placesTable').DataTable({
+                                data: data,
+                                columns: [
+                                    { data: 'properties.title' },
+                                    { data: 'properties.title_en' },
+                                    { data: 'properties.title_cn' },
+                                    {
+                                        data: 'properties._url',
+                                        render: function (data) {
+                                            return `<a href="https://vdnh.ru${data}" target="_blank">LINK</a>`;
+                                        }
+                                    }
+                                ],
+                                searching: false
+                            });
+    
+                            // Initialize the global filter for backup data
+                            document.querySelectorAll('input.global_filter').forEach((el) => {
+                                el.addEventListener(el.type === 'text' ? 'keyup' : 'change', () =>
+                                    filterGlobal(table)
+                                );
+                            });
+                        })
+                        .catch(error => console.error('Error loading backup data:', error));
+                });
+    
+            function filterGlobal(table) {
+                let filter = document.querySelector('#global_filter');
+                table.search(filter.value).draw();
+            }
+        });
+    </script>
+    
+    
+
+</body>
+</html>
