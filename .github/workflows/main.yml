@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - main
+
 jobs:
   fetch-and-save-data:
     runs-on: ubuntu-latest
@@ -20,7 +21,7 @@ jobs:
           node-version: 14
 
       - name: Install Dependencies
-        run: npm install
+        run: npm install node-fetch
 
       - name: Fetch and Save Data
         run: |
@@ -37,4 +38,3 @@ jobs:
                         console.error('Error fetching data:', error); \
                         process.exit(1); \
                       })"
-
