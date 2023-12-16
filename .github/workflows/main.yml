@@ -10,6 +10,9 @@ on:
 jobs:
   fetch-and-save-data:
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout Repository
@@ -20,3 +23,7 @@ jobs:
           curl -sS 'https://vdnh.ru/local/templates/v3_new_header/js/places-s1.js' \
             | sed -E 's/^var places = |;$//g' \
             > backup.json
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "feat: updating backup.json"
