@@ -13,28 +13,10 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-
-      - name: Install Dependencies
-        run: npm install node-fetch
+        uses: actions/checkout@v3
 
       - name: Fetch and Save Data
         run: |
-          node -e "const fetch = require('node-fetch'); \
-                    const fs = require('fs'); \
-                    fetch('https://vdnh.ru/local/templates/v3_new_header/js/places-s1.js') \
-                      .then(response => response.text()) \
-                      .then(data => { \
-                        const jsonData = data.replace(/^var places = |;$/g, ''); \
-                        const backupData = JSON.stringify(jsonData, null, 2); \
-                        fs.writeFileSync('backup.json', backupData); \
-                      }) \
-                      .catch(error => { \
-                        console.error('Error fetching data:', error); \
-                        process.exit(1); \
-                      })"
+          curl -sS 'https://vdnh.ru/local/templates/v3_new_header/js/places-s1.js' \
+            | sed -E 's/^var places = |;$//g' \
+            > backup.json
