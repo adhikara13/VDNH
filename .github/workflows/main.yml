@@ -1,39 +1,40 @@
-name: Fetch and Backup Data
+name: Fetch and Save Data
 
 on:
   schedule:
-    - cron: "0 0 * * 0" # Every Sunday at midnight UTC
+    - cron: '0 0 * * 1'  # Run every Monday at midnight
   push:
     branches:
       - main
-
 jobs:
-  fetch-and-backup:
+  fetch-and-save-data:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: 14
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
-      - name: Fetch and backup data
+      - name: Fetch and Save Data
         run: |
-          fetch('https://vdnh.ru/local/templates/v3_new_header/js/places-s1.js')
-            .then(response => response.text())
-            .then(data => {
-              const jsonData = data.replace(/^var places = |;$/g, '');
-              const backupData = JSON.stringify(jsonData, null, 2);
+          node -e "const fetch = require('node-fetch'); \
+                    const fs = require('fs'); \
+                    fetch('https://vdnh.ru/local/templates/v3_new_header/js/places-s1.js') \
+                      .then(response => response.text()) \
+                      .then(data => { \
+                        const jsonData = data.replace(/^var places = |;$/g, ''); \
+                        const backupData = JSON.stringify(jsonData, null, 2); \
+                        fs.writeFileSync('backup.json', backupData); \
+                      }) \
+                      .catch(error => { \
+                        console.error('Error fetching data:', error); \
+                        process.exit(1); \
+                      })"
 
-              require('fs').writeFileSync('backup.json', backupData);
-            })
-            .catch(error => {
-              console.error('Error fetching data:', error);
-              process.exit(1);
-            })
