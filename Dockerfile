@@ -1,11 +1,9 @@
-# Use the official Apache image
-FROM httpd:alpine
-
-# Set the working directory inside the container
-WORKDIR /usr/local/apache2/htdocs
-
-# Copy the application files to the working directory
+FROM node:lts AS build
+WORKDIR /app
 COPY . .
+RUN npm i
+RUN npm run build
 
-# Expose the port the app runs on
+FROM httpd:2.4 AS runtime
+COPY --from=build /app/dist /usr/local/apache2/htdocs/
 EXPOSE 80

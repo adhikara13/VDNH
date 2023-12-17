@@ -22,7 +22,7 @@ jobs:
         run: |
           curl -sS 'https://vdnh.ru/local/templates/v3_new_header/js/places-s1.js' \
             | sed -E 's/^var places = |;$//g' \
-            > backup.json
+            > src/api/backup.json
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
